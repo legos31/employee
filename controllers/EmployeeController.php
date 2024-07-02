@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Employees;
 use app\models\EmployeesSearch;
 use RuntimeException;
+use Yii;
 use yii\helpers\Json;
 use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
@@ -51,6 +52,7 @@ class EmployeeController extends Controller
         $dataProvider = $searchModel->search($this->request->queryParams);
         $data = $dataProvider->getModels();
         $jsonData = Json::encode($data);
+        Yii::$app->response->setStatusCode(200);
         return $jsonData;
 
     }
@@ -64,7 +66,7 @@ class EmployeeController extends Controller
     public function actionView($id)
     {
         $model = $this->findModel($id);
-
+        Yii::$app->response->setStatusCode(200);
         return Json::encode($model);
     }
 
@@ -77,13 +79,13 @@ class EmployeeController extends Controller
     {
         $model = new Employees();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->validate()) {
-                if ($model->save()) {
-                    return Json::encode($model);
-                } else {
-                    throw new RuntimeException('Error save. ' . implode(',', $model->getErrors()));
-                }
+        if ($model->load($this->request->post()) && $model->validate()) {
+            if ($model->save()) {
+                Yii::$app->response->setStatusCode(201);
+                return Json::encode($model);
+            } else {
+                Yii::$app->response->setStatusCode(500);
+                throw new RuntimeException('Error save. ' . implode(',', $model->getErrors()));
             }
         }
     }
@@ -99,10 +101,12 @@ class EmployeeController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
+        if ($model->load($this->request->post()) && $model->validate()) {
             if ($model->save()) {
+                Yii::$app->response->setStatusCode(200);
                 return Json::encode($model);
             } else {
+                Yii::$app->response->setStatusCode(500);
                 throw new RuntimeException('Error update. ' . implode(',', $model->getErrors()));
             }
         }
@@ -120,8 +124,10 @@ class EmployeeController extends Controller
         $model = $this->findModel($id);
 
         if ($model->delete()) {
+            Yii::$app->response->setStatusCode(200);
             return Json::encode($model->id);
         } else {
+            Yii::$app->response->setStatusCode(500);
             throw new RuntimeException('Error delete. ' . implode(',', $model->getErrors()));
         }
     }
